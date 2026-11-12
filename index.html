@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cafe J | Delicious food, delivered fast</title>
+  <meta name="description" content="Order food online from the café. Pickup or delivery, pay with mobile money or card.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='32' fill='%23f26b1d'/><text x='32' y='44' text-anchor='middle' font-family='sans-serif' font-size='38' font-weight='bold' fill='%23ffffff'>C</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    /* Image fallback: imgErr() tries data-l (remote link), then data-s (your file in /images); each
+       source is tried once, then the img is removed so the dashed placeholder underneath shows. */
+    function imgErr(i){ var f = i.dataset.l || i.dataset.s; if (f) { i.dataset.l = ""; i.dataset.s = ""; i.src = f; } else { i.remove(); } }
+    /* Logo fallback: swap a broken logo img back to the letter-C brand mark. */
+    function logoErr(i){ i.outerHTML = '<span class="brand-mark" aria-hidden="true">C</span>'; }
+  </script>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <!-- LOGO: to use your own logo file, replace the brand-mark span with:
+         <img src="images/logo.png" alt="Cafe J" height="32" style="border-radius:8px" onerror="logoErr(this)">
+         The img only renders if images/logo.png exists; if it is missing, logoErr() puts the
+         letter-C brand mark back automatically. Do not add a broken src expecting it to render. -->
+    <div class="brand"><span class="brand-mark" aria-hidden="true">C</span> Cafe J</div>
+    <div class="gsearch" id="gsearch"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="gq" type="search" placeholder="Search for dishes…" aria-label="Search dishes" autocomplete="off">
+      <button class="go" data-act="gosearch" aria-label="Search">→</button>
+    </div>
+    <div class="tact" id="topActions"></div>
+  </header>
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side">
+    <nav id="tabs" class="sidenav" aria-label="Main"></nav>
+    <div class="side-promo" id="sidePromo">
+      <b>Get 30% OFF</b><small>on your first order</small>
+      <button class="btn sm primary" data-act="tab" data-v="offers">Order Now</button>
+      <!-- >>> ADD YOUR PHOTO HERE (sidebar promo): images/side-promo.jpg -->
+      <div class="media round" data-ph="images/side-promo.jpg"><img data-s="images/side-promo.jpg" alt="Offer" width="130" height="130" onerror="imgErr(this)"></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <main>
+
+      <!-- ============ HOME PAGE ============ -->
+      <section id="homeView">
+
+        <div class="hero2">
+          <div class="hero-copy">
+            <div class="eyebrow">GOOD FOOD, GOOD MOOD</div>
+            <h1>Delicious Food <em>Delivered Fast.</em></h1>
+            <p class="lead">Discover our best dishes and exclusive offers. Collect at the café or get it delivered to your door.</p>
+            <div class="actions">
+              <button class="btn primary" data-act="tab" data-v="menu">Order Now →</button>
+              <button class="btn light" data-act="tab" data-v="menu">Explore Menu ▶</button>
+            </div>
+            <div class="happy"><span class="avs"><i>D</i><i>J</i><i>A</i><i>M</i></span> Happy customers</div>
+          </div>
+          <div class="hero-visual">
+            <!-- >>> ADD YOUR PHOTOS HERE: the big hero picture shows the photo of the dish in the card. Save these three photos: images/menu/spicy-zinger-burger.jpg, images/menu/margherita-pizza.jpg, images/menu/grilled-chicken-with-veggies.jpg -->
+            <div id="heroMedia"></div>
+            <div class="hero-card" id="heroCard"></div>
+            <div class="hero-ctl"><button data-act="slide" data-v="-1" aria-label="Previous">‹</button><span class="dots" id="heroDots"></span><button data-act="slide" data-v="1" aria-label="Next">›</button></div>
+          </div>
+        </div>
+
+        <div class="feats2">
+          <div class="f2"><span class="ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg></span><div><b>Free Delivery</b><small>On orders over UGX 100,000</small></div></div>
+          <div class="f2"><span class="ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></span><div><b>Easy Refunds</b><small>Cancel before cooking starts</small></div></div>
+          <div class="f2"><span class="ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><div><b>Secure Payment</b><small>Mobile money or card</small></div></div>
+          <div class="f2"><span class="ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1"/><rect x="17" y="14" width="4" height="6" rx="1"/></svg></span><div><b>Support</b><small>We are here to help</small></div></div>
+        </div>
+
+        <div class="sec-head"><h2>Explore by Cuisine</h2><button class="link2" data-act="tab" data-v="menu">View All →</button></div>
+        <div class="cuisines">
+          <!-- >>> ADD YOUR PHOTOS HERE: one square photo per cuisine, saved in images/cuisine/ with the names shown in each box below. -->
+          <button class="c1" data-act="cuisine" data-v="Italian">
+            <span class="media round" data-ph="images/cuisine/italian.jpg"><img data-s="images/cuisine/italian.jpg" alt="Italian" width="130" height="130" loading="lazy" onerror="imgErr(this)"></span>
+            <b>Italian</b><small data-count="Italian"></small>
+          </button>
+          <button class="c2" data-act="cuisine" data-v="Chinese">
+            <span class="media round" data-ph="images/cuisine/chinese.jpg"><img data-s="images/cuisine/chinese.jpg" alt="Chinese" width="130" height="130" loading="lazy" onerror="imgErr(this)"></span>
+            <b>Chinese</b><small data-count="Chinese"></small>
+          </button>
+          <button class="c3" data-act="cuisine" data-v="Indian">
+            <span class="media round" data-ph="images/cuisine/indian.jpg"><img data-s="images/cuisine/indian.jpg" alt="Indian" width="130" height="130" loading="lazy" onerror="imgErr(this)"></span>
+            <b>Indian</b><small data-count="Indian"></small>
+          </button>
+          <button class="c4" data-act="cuisine" data-v="Mexican">
+            <span class="media round" data-ph="images/cuisine/mexican.jpg"><img data-s="images/cuisine/mexican.jpg" alt="Mexican" width="130" height="130" loading="lazy" onerror="imgErr(this)"></span>
+            <b>Mexican</b><small data-count="Mexican"></small>
+          </button>
+          <button class="c5" data-act="cuisine" data-v="Japanese">
+            <span class="media round" data-ph="images/cuisine/japanese.jpg"><img data-s="images/cuisine/japanese.jpg" alt="Japanese" width="130" height="130" loading="lazy" onerror="imgErr(this)"></span>
+            <b>Japanese</b><small data-count="Japanese"></small>
+          </button>
+        </div>
+
+        <div class="sec-head"><h2>Popular Dishes</h2><button class="link2" data-act="tab" data-v="menu">View All →</button></div>
+        <!-- >>> ADD YOUR PHOTOS HERE: dish cards are drawn by app.js. One photo per dish: images/menu/<dish-name>.jpg, e.g. images/menu/sushi-platter.jpg (see images/README.txt) -->
+        <div class="pop" id="popular"></div>
+
+        <div class="promos">
+          <div class="promo green">
+            <div><span class="tag">LIMITED TIME OFFER</span><h3>Flat 30% OFF<br>On Your First Order!</h3><p>Use code <b>TASTY30</b> at checkout and enjoy delicious rewards.</p><button class="btn dark" data-act="tab" data-v="menu">Order Now →</button></div>
+            <!-- >>> ADD YOUR PHOTO HERE (green banner): images/promo-first-order.jpg -->
+            <div class="media round" data-ph="images/promo-first-order.jpg"><img data-s="images/promo-first-order.jpg" alt="Fresh salad" width="400" height="400" loading="lazy" onerror="imgErr(this)"></div>
+          </div>
+          <div class="promo orange">
+            <div><span class="tag" style="color:var(--orange)">WEEKEND SPECIAL</span><h3 style="color:var(--orange)">Family Combo Meals</h3><p>Feed the whole family with our special combo deal.</p><button class="btn primary" data-act="combo">Order Now →</button></div>
+            <!-- >>> ADD YOUR PHOTO HERE (orange banner): images/promo-combo.jpg -->
+            <div class="media round" data-ph="images/promo-combo.jpg"><img data-s="images/promo-combo.jpg" alt="Burger and fries" width="400" height="400" loading="lazy" onerror="imgErr(this)"></div>
+          </div>
+        </div>
+
+        <div class="trust"><b>Pay your way</b><span>Mobile Money</span><span>Visa</span><span>Mastercard</span><span>Secure checkout</span><span>Order tracking</span></div>
+      </section>
+
+      <div id="app"></div>
+    </main>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="foot" id="siteFoot">
+      <div><div class="brand"><span class="brand-mark" aria-hidden="true">C</span> Cafe J</div><p class="hint" style="margin:10px 0">Your favorite food, delivered fast to your doorstep. Enjoy a seamless ordering experience.</p>
+        <div class="socials"><button data-act="soon" aria-label="Facebook">f</button><button data-act="soon" aria-label="Instagram">◎</button><button data-act="soon" aria-label="X">t</button></div></div>
+      <div><h4>Company</h4><button class="flink" data-act="soon">About Us</button><button class="flink" data-act="soon">Careers</button><button class="flink" data-act="soon">Blog</button><button class="flink" data-act="tab" data-v="support">Contact Us</button></div>
+      <div><h4>Support</h4><button class="flink" data-act="tab" data-v="support">Help Center</button><button class="flink" data-act="tab" data-v="orders">Track Order</button><button class="flink" data-act="tab" data-v="support">Refunds</button><button class="flink" data-act="tab" data-v="support">Delivery Info</button><button class="flink" data-act="tab" data-v="support">FAQs</button></div>
+      <div><h4>Legal</h4><button class="flink" data-act="soon">Terms &amp; Conditions</button><button class="flink" data-act="soon">Privacy Policy</button><button class="flink" data-act="soon">Cookie Policy</button><button class="flink" data-act="soon">Refund Policy</button></div>
+      <div><h4>Newsletter</h4><p class="hint">Subscribe to get latest updates and exclusive offers.</p>
+        <form id="newsForm" class="news"><input class="in" id="newsEmail" type="email" placeholder="Your Email" required aria-label="Your email"><button class="btn primary sm" type="submit">Subscribe</button></form></div>
+      <div class="copy">© 2026 Cafe J. All rights reserved.</div>
+    </footer>
+  </div>
+</div>
+<div id="layer"></div>
+<div id="toast" class="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -6,16 +6,11 @@
   <title>Cafe J | Delicious food, delivered fast</title>
   <meta name="description" content="Order food online from the café. Pickup or delivery, pay with mobile money or card.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='32' fill='%23f26b1d'/><text x='32' y='44' text-anchor='middle' font-family='sans-serif' font-size='38' font-weight='bold' fill='%23ffffff'>C</text></svg>">
   <link rel="stylesheet" href="style.css">
   <script>
-    /* Image fallback: imgErr() tries data-l (remote link), then data-s (your file in /images); each
-       source is tried once, then the img is removed so the dashed placeholder underneath shows. */
-    function imgErr(i){ var f = i.dataset.l || i.dataset.s; if (f) { i.dataset.l = ""; i.dataset.s = ""; i.src = f; } else { i.remove(); } }
-    /* Logo fallback: swap a broken logo img back to the letter-C brand mark. */
-    function logoErr(i){ i.outerHTML = '<span class="brand-mark" aria-hidden="true">C</span>'; }
+    /* Image fallback: remote link -> your file in /images -> placeholder. Used by every <img> below. */
+    function imgErr(i){ if(i.dataset.l){ i.src=i.dataset.l; i.dataset.l=''; } else { i.remove(); } }
   </script>
 </head>
 <body>
@@ -23,10 +18,7 @@
 
   <!-- ============ TOP BAR ============ -->
   <header class="topbar">
-    <!-- LOGO: to use your own logo file, replace the brand-mark span with:
-         <img src="images/logo.png" alt="Cafe J" height="32" style="border-radius:8px" onerror="logoErr(this)">
-         The img only renders if images/logo.png exists; if it is missing, logoErr() puts the
-         letter-C brand mark back automatically. Do not add a broken src expecting it to render. -->
+    <!-- LOGO: replace the letter with <img data-s="images/logo.png" alt="Cafe J" height="30"> -->
     <div class="brand"><span class="brand-mark" aria-hidden="true">C</span> Cafe J</div>
     <div class="gsearch" id="gsearch"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
       <input id="gq" type="search" placeholder="Search for dishes…" aria-label="Search dishes" autocomplete="off">
@@ -42,7 +34,7 @@
       <b>Get 30% OFF</b><small>on your first order</small>
       <button class="btn sm primary" data-act="tab" data-v="offers">Order Now</button>
       <!-- >>> ADD YOUR PHOTO HERE (sidebar promo): images/side-promo.jpg -->
-      <div class="media round" data-ph="images/side-promo.jpg"><img data-s="images/side-promo.jpg" alt="Offer" width="130" height="130" onerror="imgErr(this)"></div>
+      <div class="media round" data-ph="images/side-promo.jpg"><img data-s="images/side-promo.jpg" alt="Offer" onerror="imgErr(this)"></div>
     </div>
   </aside>
 
@@ -82,23 +74,23 @@
         <div class="cuisines">
           <!-- >>> ADD YOUR PHOTOS HERE: one square photo per cuisine, saved in images/cuisine/ with the names shown in each box below. -->
           <button class="c1" data-act="cuisine" data-v="Italian">
-            <span class="media round" data-ph="images/cuisine/italian.jpg"><img data-s="images/cuisine/italian.jpg" alt="Italian" width="130" height="130" loading="lazy" onerror="imgErr(this)"></span>
+            <div class="media round" data-ph="images/cuisine/italian.jpg"><img data-s="images/cuisine/italian.jpg" alt="Italian" onerror="imgErr(this)"></div>
             <b>Italian</b><small data-count="Italian"></small>
           </button>
           <button class="c2" data-act="cuisine" data-v="Chinese">
-            <span class="media round" data-ph="images/cuisine/chinese.jpg"><img data-s="images/cuisine/chinese.jpg" alt="Chinese" width="130" height="130" loading="lazy" onerror="imgErr(this)"></span>
+            <div class="media round" data-ph="images/cuisine/chinese.jpg"><img data-s="images/cuisine/chinese.jpg" alt="Chinese" onerror="imgErr(this)"></div>
             <b>Chinese</b><small data-count="Chinese"></small>
           </button>
           <button class="c3" data-act="cuisine" data-v="Indian">
-            <span class="media round" data-ph="images/cuisine/indian.jpg"><img data-s="images/cuisine/indian.jpg" alt="Indian" width="130" height="130" loading="lazy" onerror="imgErr(this)"></span>
+            <div class="media round" data-ph="images/cuisine/indian.jpg"><img data-s="images/cuisine/indian.jpg" alt="Indian" onerror="imgErr(this)"></div>
             <b>Indian</b><small data-count="Indian"></small>
           </button>
           <button class="c4" data-act="cuisine" data-v="Mexican">
-            <span class="media round" data-ph="images/cuisine/mexican.jpg"><img data-s="images/cuisine/mexican.jpg" alt="Mexican" width="130" height="130" loading="lazy" onerror="imgErr(this)"></span>
+            <div class="media round" data-ph="images/cuisine/mexican.jpg"><img data-s="images/cuisine/mexican.jpg" alt="Mexican" onerror="imgErr(this)"></div>
             <b>Mexican</b><small data-count="Mexican"></small>
           </button>
           <button class="c5" data-act="cuisine" data-v="Japanese">
-            <span class="media round" data-ph="images/cuisine/japanese.jpg"><img data-s="images/cuisine/japanese.jpg" alt="Japanese" width="130" height="130" loading="lazy" onerror="imgErr(this)"></span>
+            <div class="media round" data-ph="images/cuisine/japanese.jpg"><img data-s="images/cuisine/japanese.jpg" alt="Japanese" onerror="imgErr(this)"></div>
             <b>Japanese</b><small data-count="Japanese"></small>
           </button>
         </div>
@@ -111,12 +103,12 @@
           <div class="promo green">
             <div><span class="tag">LIMITED TIME OFFER</span><h3>Flat 30% OFF<br>On Your First Order!</h3><p>Use code <b>TASTY30</b> at checkout and enjoy delicious rewards.</p><button class="btn dark" data-act="tab" data-v="menu">Order Now →</button></div>
             <!-- >>> ADD YOUR PHOTO HERE (green banner): images/promo-first-order.jpg -->
-            <div class="media round" data-ph="images/promo-first-order.jpg"><img data-s="images/promo-first-order.jpg" alt="Fresh salad" width="400" height="400" loading="lazy" onerror="imgErr(this)"></div>
+            <div class="media round" data-ph="images/promo-first-order.jpg"><img data-s="images/promo-first-order.jpg" alt="Fresh salad" onerror="imgErr(this)"></div>
           </div>
           <div class="promo orange">
             <div><span class="tag" style="color:var(--orange)">WEEKEND SPECIAL</span><h3 style="color:var(--orange)">Family Combo Meals</h3><p>Feed the whole family with our special combo deal.</p><button class="btn primary" data-act="combo">Order Now →</button></div>
             <!-- >>> ADD YOUR PHOTO HERE (orange banner): images/promo-combo.jpg -->
-            <div class="media round" data-ph="images/promo-combo.jpg"><img data-s="images/promo-combo.jpg" alt="Burger and fries" width="400" height="400" loading="lazy" onerror="imgErr(this)"></div>
+            <div class="media round" data-ph="images/promo-combo.jpg"><img data-s="images/promo-combo.jpg" alt="Burger and fries" onerror="imgErr(this)"></div>
           </div>
         </div>
 

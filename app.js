@@ -1,8 +1,8 @@
 (function () {
-  var TODAY = (function () { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); })();
+  var TODAY = "2026-10-21";
   var state = {
     role: "customer", view: "home", cat: "All", q: "", cuisine: "", favs: [], promoOn: false, promoMsg: "", loginRole: "staff", chefView: "kitchen",
-    user: 1, authTab: "in", authErr: "", aEmail: "", promoCode: "",
+    user: 1, authTab: "in", authErr: "",
     cart: {}, slot: "ASAP", note: "", method: "mtn", phone: "0775873839", checkErr: "",
     lastOrder: null, staffView: "orders", processing: false, fulfil: "pickup", dArea: "", dAddr: ""
   };
@@ -19,8 +19,8 @@
     { id: 110, name: "Chips and Wings", cat: "Fast food", price: 32000, avail: true, desc: "Crispy chips with six spicy wings" }
   ];
   var customers = [
-    { id: 1, name: "Diane", email: "diane01@gmail.com", phone: "0775873839", address: "Seeta", pw: hpw("diane01@gmail.com", "demo1234") },
-    { id: 2, name: "James", email: "james02@gmail.com", phone: "0701547182", address: "Nalya", pw: hpw("james02@gmail.com", "demo1234") }
+    { id: 1, name: "Diane", email: "diane01@gmail.com", phone: "0775873839", address: "Seeta" },
+    { id: 2, name: "James", email: "james02@gmail.com", phone: "0701547182", address: "Nalya" }
   ];
   var orders = [
     { id: 5001, cid: 1, date: TODAY, slot: "ASAP", items: [{ id: 101, qty: 1 }, { id: 107, qty: 1 }], status: "Completed", total: 70000, note: "" },
@@ -69,37 +69,6 @@
   var POPULAR = [112, 105, 113, 114, 115], SLIDES = [111, 105, 112], slideIdx = 0;
   var reservations = [], nextRes = 1, reviews = [], subscribers = [];
   var flowD = ["Pending", "Preparing", "Ready", "Out for delivery", "Completed"];
-
-  /* ---------- persistence: cart, favorites, orders, reservations, reviews, subscribers ---------- */
-  var STORE_KEY = "cafe_state_v1";
-  function saveState() {
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({
-        cart: state.cart, favs: state.favs, customers: customers, orders: orders, payments: payments,
-        reservations: reservations, reviews: reviews, subscribers: subscribers,
-        nextOrder: nextOrder, nextPay: nextPay, nextCust: nextCust, nextRes: nextRes, nextItem: nextItem
-      }));
-    } catch (e) {}
-  }
-  // Load saved data only when it exists; otherwise the seed data above stays the default.
-  function loadState() {
-    var s = null;
-    try { s = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch (e) { return; }
-    if (!s) return;
-    if (s.cart) state.cart = s.cart;
-    if (s.favs) state.favs = s.favs;
-    if (s.customers && s.customers.length) customers = s.customers;
-    if (s.orders && s.orders.length) orders = s.orders;
-    if (s.payments && s.payments.length) payments = s.payments;
-    if (s.reservations) reservations = s.reservations;
-    if (s.reviews) reviews = s.reviews;
-    if (s.subscribers) subscribers = s.subscribers;
-    if (s.nextOrder) nextOrder = s.nextOrder;
-    if (s.nextPay) nextPay = s.nextPay;
-    if (s.nextCust) nextCust = s.nextCust;
-    if (s.nextRes) nextRes = s.nextRes;
-    if (s.nextItem) nextItem = s.nextItem;
-  }
   function zoneFee(n) { var z = ZONES.filter(function (x) { return x[0] === n; })[0]; return z ? z[1] : 0; }
   function isDel(o) { return o.type === "delivery"; }
   function fl(o) { return isDel(o) ? flowD : flow; }
@@ -116,11 +85,9 @@
   function imgOf(m) { return m.img || "images/menu/" + slug(m.name) + ".jpg"; }
   // IMAGE SPACE: shows a dashed placeholder until a real file exists at src, then the photo covers it.
   // Each dish looks for images/menu/<dish-name>.jpg, e.g. images/menu/chicken-burger.jpg
-  // Photos are your own files in the images folder (see images/README.txt). IMG_LINKS stays empty by
-  // default (nothing is loaded from the internet); add { "<label>": "<url>" } to try a remote image
-  // first and fall back to the local file through data-l in imgErr().
+  // Photos are your own files in the images folder (see images/README.txt). Nothing is loaded from the internet.
   var IMG_LINKS = {};
-  function imgBox(src, label, cls, eager) { var r = IMG_LINKS[label] || ""; return '<div class="media ' + (cls || "") + '" data-ph="' + esc(src) + '"><img src="' + esc(r || src) + '" data-l="' + (r ? esc(src) : "") + '" alt="' + esc(label) + '" loading="' + (eager ? "eager" : "lazy") + '" referrerpolicy="no-referrer" onerror="imgErr(this)"></div>'; }
+  function imgBox(src, label, cls) { var r = IMG_LINKS[label] || ""; return '<div class="media ' + (cls || "") + '" data-ph="' + esc(src) + '"><img src="' + esc(r || src) + '" data-l="' + (r ? esc(src) : "") + '" alt="' + esc(label) + '" loading="lazy" referrerpolicy="no-referrer" onerror="imgErr(this)"></div>'; }
   function delInfo(o) { if (!isDel(o)) return ""; var c = byId(customers, o.cid); return '<div class="hint">' + esc(o.addr) + ", " + esc(o.area) + (c ? " · " + esc(c.phone) : "") + "</div>"; }
   function nextLabel(o) { var f = fl(o), n = f[f.indexOf(o.status) + 1]; return n === "Out for delivery" ? "Send out for delivery" : n === "Completed" ? (isDel(o) ? "Mark delivered" : "Mark collected") : "Mark " + n.toLowerCase(); }
   function fulfilPanel() {
@@ -136,7 +103,7 @@
   function deliveryPanel() { return '<div class="panel">' + table("Delivery fees", ["Area", "Fee"], ZONES.map(function (z) { return [esc(z[0]), ugx(z[1])]; })) + '<p class="hint" style="margin-top:8px">Free delivery on orders of ' + ugx(FREE_DELIVERY_ABOVE) + " or more. Pickup is always free.</p></div>"; }
   function promoBox() {
     if (state.promoOn && discount() > 0) return '<p class="hint">Code TASTY30 applied. <button class="link" data-act="promooff">Remove</button></p>';
-    return '<div style="display:flex;gap:8px;margin-top:10px"><input class="in" id="promo" placeholder="Promo code" aria-label="Promo code" value="' + esc(state.promoCode) + '" style="flex:1"><button class="btn sm" data-act="promo">Apply</button></div>' + (state.promoMsg ? '<p class="err">' + state.promoMsg + "</p>" : "");
+    return '<div style="display:flex;gap:8px;margin-top:10px"><input class="in" id="promo" placeholder="Promo code" aria-label="Promo code" style="flex:1"><button class="btn sm" data-act="promo">Apply</button></div>' + (state.promoMsg ? '<p class="err">' + state.promoMsg + "</p>" : "");
   }
   function popularHtml() {
     return POPULAR.map(function (id) {
@@ -147,7 +114,7 @@
   }
   function heroUpdate() {
     var m = byId(menu, SLIDES[slideIdx]); if (!m) return;
-    $("#heroMedia").innerHTML = imgBox(imgOf(m), m.name, "hero-img", true);
+    $("#heroMedia").innerHTML = imgBox(imgOf(m), m.name, "hero-img");
     $("#heroCard").innerHTML = "<b>" + esc(m.name) + '</b><small class="hint">' + esc(m.sub || m.desc) + '</small><span class="price num">' + ugx(priceOf(m)) + "</span>";
     $("#heroDots").innerHTML = SLIDES.map(function (_, i) { return '<i class="' + (i === slideIdx ? "on" : "") + '"></i>'; }).join("");
   }
@@ -162,7 +129,7 @@
   function viewFavs() { return head("Favorites", "Dishes you saved with the heart.") + listGrid(menu.filter(function (m) { return state.favs.indexOf(m.id) > -1; }), "Tap the heart on a dish to save it here."); }
   function viewReserve() {
     var u = user();
-    return head("Reservations", "Request a table at the café. Staff will confirm.") + '<form class="panel stack" style="max-width:520px" id="resForm"><div class="two"><label class="f">Name<input class="in" id="rsName" required value="' + esc(u ? u.name : "") + '"></label><label class="f">Phone<input class="in" id="rsPhone" required value="' + esc(u ? u.phone : "") + '"></label></div><div class="two"><label class="f">Date<input class="in" id="rsDate" type="date" min="' + TODAY + '" required></label><label class="f">Time<select class="in" id="rsTime">' + ["12:00", "13:00", "14:00", "15:00", "16:00", "18:00", "19:00"].map(function (t) { return "<option>" + t + "</option>"; }).join("") + '</select></label></div><label class="f">Guests<input class="in" id="rsGuests" type="number" min="1" max="12" value="2"></label><button class="btn primary" type="submit">Request a table</button></form>' +
+    return head("Reservations", "Request a table at the café. Staff will confirm.") + '<form class="panel stack" style="max-width:520px" id="resForm"><div class="two"><label class="f">Name<input class="in" id="rsName" required value="' + esc(u ? u.name : "") + '"></label><label class="f">Phone<input class="in" id="rsPhone" required value="' + esc(u ? u.phone : "") + '"></label></div><div class="two"><label class="f">Date<input class="in" id="rsDate" type="date" required></label><label class="f">Time<select class="in" id="rsTime">' + ["12:00", "13:00", "14:00", "15:00", "16:00", "18:00", "19:00"].map(function (t) { return "<option>" + t + "</option>"; }).join("") + '</select></label></div><label class="f">Guests<input class="in" id="rsGuests" type="number" min="1" max="12" value="2"></label><button class="btn primary" type="submit">Request a table</button></form>' +
       (reservations.length ? '<div style="margin-top:16px">' + table("Requests from this browser", ["Name", "Date", "Time", "Guests", "Status"], reservations.map(function (r) { return [esc(r.name), r.date, r.time, r.guests, pill(r.status)]; })) + "</div>" : "");
   }
   function viewReviews() {
@@ -180,7 +147,7 @@
   // FRONT-END DEMO ONLY: accounts live in this browser (localStorage) and passwords are only lightly hashed.
   // A real launch needs a server with proper password hashing and sessions.
   function hpw(u, p) { var s = "cafe:" + u.toLowerCase() + ":" + p, h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); }
-  var staffUsers = [{ id: 1, role: "staff", name: "Cafe J Manager", username: "staff", hash: hpw("staff", "staff123"), active: true }, { id: 2, role: "chef", name: "Head Chef", username: "chef", hash: hpw("chef", "chef123"), active: true, rights: { cook: true, stock: false } }], nextUid = 3;
+  var staffUsers = [{ id: 1, role: "staff", name: "Cafe J Manager", username: "staff", hash: hpw("staff", "staff123"), active: true }, { id: 2, role: "chef", name: "Head Chef", username: "chef", hash: hpw("chef", "chef123"), active: true, rights: { cook: true, stock: false, chat: true } }], nextUid = 3;
   try { var sv = JSON.parse(localStorage.getItem("cafe_users_v1") || "null"); if (sv && sv.users && sv.users.length) { staffUsers = sv.users; nextUid = sv.next; } } catch (e) {}
   function saveUsers() { try { localStorage.setItem("cafe_users_v1", JSON.stringify({ users: staffUsers, next: nextUid })); } catch (e) {} }
   var session = null; try { session = JSON.parse(sessionStorage.getItem("cafe_session") || "null"); } catch (e) {}
@@ -190,18 +157,18 @@
   (function () { var u = me(); if (u && u.active) state.role = u.role; else setSession(null); })();
   function viewLogin() {
     var k = state.loginRole === "chef";
-    return head(k ? "Kitchen login" : "Staff login", k ? "For kitchen accounts created by staff." : "For café staff only.") + '<form class="panel stack" style="max-width:420px" id="loginForm"><label class="f">Username<input class="in" id="lUser" autocomplete="username" required value="' + esc(state.lUser || "") + '"></label><label class="f">Password<input class="in" id="lPass" type="password" autocomplete="current-password" required></label>' + (state.authErr ? '<p class="err">' + state.authErr + "</p>" : "") + '<button class="btn primary" type="submit">Log in</button><p class="hint">Contact admin.</p></form>';
+    return head(k ? "Kitchen login" : "Staff login", k ? "For kitchen accounts created by staff." : "For café staff only.") + '<form class="panel stack" style="max-width:420px" id="loginForm"><label class="f">Username<input class="in" id="lUser" autocomplete="username" required value="' + esc(state.lUser || "") + '"></label><label class="f">Password<input class="in" id="lPass" type="password" autocomplete="current-password" required></label>' + (state.authErr ? '<p class="err">' + state.authErr + "</p>" : "") + '<button class="btn primary" type="submit">Log in</button>' + (k ? '<p class="hint">Contact admin.</p>' : '<p class="hint">Contact admin.</p>') + "</form>";
   }
   function viewTeam() {
     var kit = staffUsers.filter(function (u) { return u.role === "chef"; });
     var rows = kit.map(function (u) {
       var r = u.rights || {};
       return [esc(u.name), '<span class="mono">' + esc(u.username) + "</span>", u.active ? '<span class="pill Paid">Active</span>' : '<span class="pill Cancelled">Disabled</span>',
-        '<label class="check"><input type="checkbox" data-kr="cook" data-id="' + u.id + '"' + (r.cook ? " checked" : "") + '> Cook orders</label><label class="check"><input type="checkbox" data-kr="stock" data-id="' + u.id + '"' + (r.stock ? " checked" : "") + '> Manage stock</label>',
+        '<label class="radio"><input type="checkbox" data-kr="cook" data-id="' + u.id + '"' + (r.cook ? " checked" : "") + '> Cook orders</label><label class="radio"><input type="checkbox" data-kr="stock" data-id="' + u.id + '"' + (r.stock ? " checked" : "") + '> Manage stock</label><label class="radio"><input type="checkbox" data-kr="chat" data-id="' + u.id + '"' + (r.chat !== false ? " checked" : "") + '> Guest chat</label>',
         '<button class="btn sm" data-act="kactive" data-id="' + u.id + '">' + (u.active ? "Disable access" : "Enable access") + '</button> <button class="btn sm" data-act="kreset" data-id="' + u.id + '">Reset password</button> <button class="btn danger sm" data-act="kdel" data-id="' + u.id + '">Delete</button>'];
     });
     return head("Team", "Create kitchen accounts and choose what each person can do.") + table("Kitchen accounts", ["Name", "Username", "Access", "Rights", "Actions"], rows) +
-      '<form class="panel" id="addKitchen" style="margin-top:16px"><h3>Create a kitchen account</h3><div class="two" style="margin-bottom:10px"><label class="f">Full name<input class="in" id="kName" required></label><label class="f">Username<input class="in" id="kUser" required autocomplete="off"></label></div><div class="two" style="margin-bottom:10px"><label class="f">Password (6+ characters)<input class="in" id="kPass" type="password" minlength="6" required autocomplete="new-password"></label><div class="f">Rights<label class="check"><input type="checkbox" id="kCook" checked> Cook orders</label><label class="check"><input type="checkbox" id="kStock"> Manage stock</label></div></div>' + (state.authErr ? '<p class="err">' + state.authErr + "</p>" : "") + '<button class="btn primary" type="submit">Create account</button></form>' +
+      '<form class="panel" id="addKitchen" style="margin-top:16px"><h3>Create a kitchen account</h3><div class="two" style="margin-bottom:10px"><label class="f">Full name<input class="in" id="kName" required></label><label class="f">Username<input class="in" id="kUser" required autocomplete="off"></label></div><div class="two" style="margin-bottom:10px"><label class="f">Password (6+ characters)<input class="in" id="kPass" type="password" minlength="6" required autocomplete="new-password"></label><div class="f">Rights<label class="radio"><input type="checkbox" id="kCook" checked> Cook orders</label><label class="radio"><input type="checkbox" id="kStock"> Manage stock</label><label class="radio"><input type="checkbox" id="kChat" checked> Guest chat</label></div></div>' + (state.authErr ? '<p class="err">' + state.authErr + "</p>" : "") + '<button class="btn primary" type="submit">Create account</button></form>' +
       '<form class="panel" id="pwForm" style="margin-top:16px;max-width:420px"><h3>Change my staff password</h3><label class="f">New password (6+ characters)<input class="in" id="myPass" type="password" minlength="6" required autocomplete="new-password"></label><button class="btn" type="submit" style="margin-top:10px">Update password</button></form>';
   }
   function viewChefStock() {
@@ -212,10 +179,88 @@
       table("Newsletter subscribers", ["Email"], subscribers.map(function (e) { return [esc(e)]; }));
   }
 
+  /* ---------- live chat: guest <-> kitchen ---------- */
+  // CONNECT LIVE CHAT ACROSS DEVICES: create a free Firebase Realtime Database (steps in CHAT-SETUP.txt) and paste its address
+  // between the quotes, for example "https://cafej-default-rtdb.firebaseio.com". Left empty = demo mode (this browser only).
+  var FIREBASE_URL = "";
+  var chatApi = (function () {
+    var KEY = "cafe_chats_v1", base = FIREBASE_URL.replace(/\/+$/, "");
+    function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+    function save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
+    function walk(d, p, make) { var parts = p.split("/").filter(Boolean), o = d; for (var i = 0; i < parts.length; i++) { if (o[parts[i]] === undefined || o[parts[i]] === null) { if (!make) return undefined; o[parts[i]] = {}; } o = o[parts[i]]; } return o; }
+    if (!base) return {
+      live: false,
+      read: function (p) { return Promise.resolve(walk(load(), p, false) || null); },
+      push: function (p, v) { var d = load(), o = walk(d, p, true); o["m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5)] = v; save(d); return Promise.resolve(); },
+      patch: function (p, v) { var d = load(), o = walk(d, p, true); for (var k in v) o[k] = v[k]; save(d); return Promise.resolve(); },
+      remove: function (p) { var d = load(), parts = p.split("/"), last = parts.pop(), o = walk(d, parts.join("/"), false); if (o) delete o[last]; save(d); return Promise.resolve(); }
+    };
+    function url(p) { return base + "/" + p + ".json"; }
+    return {
+      live: true,
+      read: function (p) { return fetch(url(p)).then(function (r) { return r.json(); }).catch(function () { return null; }); },
+      push: function (p, v) { return fetch(url(p), { method: "POST", body: JSON.stringify(v) }); },
+      patch: function (p, v) { return fetch(url(p), { method: "PATCH", body: JSON.stringify(v) }); },
+      remove: function (p) { return fetch(url(p), { method: "DELETE" }); }
+    };
+  })();
+  var chatGuest = null, chatSeen = 0, chatData = {}, chatActive = null, chatHtml = "", chatBadgeN = 0;
+  try { chatGuest = JSON.parse(localStorage.getItem("cafe_chat_guest") || "null"); chatSeen = +(localStorage.getItem("cafe_chat_seen") || 0); } catch (e) {}
+  function chatAllowed() { var u = me(); return !!u && u.active && (u.role === "staff" || !(u.rights && u.rights.chat === false)); }
+  function chatBadge(k) { return k === "chat" && chatBadgeN > 0 ? '<span class="badge">' + chatBadgeN + "</span>" : ""; }
+  function msgsOf(c) { var m = c && c.messages ? c.messages : {}; return Object.keys(m).map(function (k) { return m[k]; }).sort(function (a, b) { return a.t - b.t; }); }
+  function bubbles(list, mine) {
+    return list.length ? list.map(function (m) { return '<div class="msg ' + (m.from === mine ? "mine" : "theirs") + '"><b>' + esc(m.name || (m.from === "guest" ? "Guest" : "Kitchen")) + "</b><span>" + esc(m.text) + "</span><small>" + new Date(m.t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) + "</small></div>"; }).join("") : '<div class="empty">No messages yet. Say hello.</div>';
+  }
+  function paintMsgs(list, mine) {
+    var box = $("#chatMsgs"); if (!box) return;
+    var h = bubbles(list, mine); if (h === chatHtml && box.dataset.p) return;
+    var near = box.scrollHeight - box.scrollTop - box.clientHeight < 90, first = !box.dataset.p;
+    box.innerHTML = h; chatHtml = h; box.dataset.p = "1"; if (near || first) box.scrollTop = box.scrollHeight;
+  }
+  function paintKitchen() {
+    var L = $("#kList"); if (!L) return;
+    var ids = Object.keys(chatData).sort(function (a, b) { return ((chatData[b].meta || {}).updated || 0) - ((chatData[a].meta || {}).updated || 0); });
+    L.innerHTML = ids.length ? ids.map(function (id) { var m = chatData[id].meta || {}; return '<button class="kc' + (id === chatActive ? " on" : "") + '" data-act="kopen" data-v="' + id + '"><b>' + esc(m.name || "Guest") + "</b><small>Table " + esc(m.table || "?") + "</small><span>" + esc(m.last || "") + "</span>" + (m.lastFrom === "guest" ? '<i class="dot"></i>' : "") + "</button>"; }).join("") : '<div class="empty">No guest chats yet.</div>';
+    var c = chatActive && chatData[chatActive];
+    $("#kTitle").innerHTML = c ? "<b>" + esc((c.meta || {}).name || "Guest") + "</b> · Table " + esc((c.meta || {}).table || "?") + ' <button class="link" data-act="kdelchat">Delete chat</button>' : "Select a conversation";
+    $("#kForm").hidden = !c;
+    if (c) paintMsgs(msgsOf(c), "kitchen"); else { var box = $("#chatMsgs"); if (box) { box.innerHTML = ""; delete box.dataset.p; } }
+  }
+  function chatTick() {
+    var cust = state.role === "customer";
+    if (cust && chatGuest) {
+      chatApi.read("chats/" + chatGuest.id).then(function (c) {
+        var list = msgsOf(c);
+        if (state.role === "customer" && state.view === "chat") { paintMsgs(list, "guest"); var last = list.length ? list[list.length - 1].t : 0; if (last > chatSeen) { chatSeen = last; try { localStorage.setItem("cafe_chat_seen", last); } catch (e) {} } }
+        var n = list.filter(function (m) { return m.from !== "guest" && m.t > chatSeen; }).length;
+        if (n !== chatBadgeN) { chatBadgeN = n; renderChrome(); }
+      });
+    } else if (!cust && chatAllowed()) {
+      chatApi.read("chats").then(function (all) {
+        chatData = all || {};
+        var n = Object.keys(chatData).filter(function (k) { return chatData[k].meta && chatData[k].meta.lastFrom === "guest"; }).length;
+        if ($("#kList")) paintKitchen();
+        if (n !== chatBadgeN) { chatBadgeN = n; renderChrome(); }
+      });
+    }
+  }
+  setInterval(chatTick, 2500);
+  function chatNote() { return chatApi.live ? "" : '<p class="hint">Demo mode: chat only reaches other tabs in this browser until live chat is connected (see FIREBASE_URL in app.js).</p>'; }
+  function viewChat() {
+    var u = user();
+    if (!chatGuest) return head("Chat with the chef", "For guests who are in the restaurant right now. Tell us who you are and where you are sitting.") + '<form class="panel stack" style="max-width:420px" id="chatJoin"><label class="f">Your name<input class="in" id="cgName" required value="' + esc(u ? u.name : "") + '"></label><label class="f">Table number<input class="in" id="cgTable" required maxlength="6" placeholder="e.g. 7"></label><button class="btn primary" type="submit">Start chat</button></form>' + chatNote();
+    return head("Chat with the chef", "You are " + esc(chatGuest.name) + ", table " + esc(chatGuest.table) + '. <button class="link" data-act="chatleave">End chat</button>') + '<div class="chatbox"><div id="chatMsgs" class="chatmsgs"></div><form id="chatForm" class="chatform"><input class="in" id="chatText" maxlength="500" placeholder="Message the chef…" autocomplete="off" required><button class="btn primary" type="submit">Send</button></form></div>' + chatNote();
+  }
+  function viewKChat() {
+    if (!chatAllowed()) return head("Guest chat", "Your account does not have chat access. Ask staff.");
+    return head("Guest chat", "Guests in the restaurant message you here.") + chatNote() + '<div class="kchat"><div class="kc-list" id="kList"></div><div class="kc-main"><div class="hint" id="kTitle">Select a conversation</div><div id="chatMsgs" class="chatmsgs"></div><form id="kForm" class="chatform" hidden><input class="in" maxlength="500" placeholder="Reply…" autocomplete="off" required><button class="btn primary" type="submit">Send</button></form></div></div>';
+  }
+
   /* ---------- chrome ---------- */
-  var ICONS = {"home": "<path d=\"M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z\"/>", "menu": "<path d=\"M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3c-2 2-3 5-3 8h3v10\"/>", "grid": "<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/>", "tag": "<path d=\"M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z\"/><circle cx=\"8\" cy=\"8\" r=\"1.5\"/>", "cal": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M3 10h18M8 3v4M16 3v4\"/>", "clip": "<rect x=\"5\" y=\"4\" width=\"14\" height=\"17\" rx=\"2\"/><path d=\"M9 4h6v3H9zM9 12h6M9 16h6\"/>", "star": "<path d=\"M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z\"/>", "help": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01\"/>", "heart": "<path d=\"M12 20s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z\"/>", "cart": "<circle cx=\"9\" cy=\"20\" r=\"1.4\"/><circle cx=\"18\" cy=\"20\" r=\"1.4\"/><path d=\"M2 3h3l2.5 12h11l2-8H6\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c1-4 4-6 8-6s7 2 8 6\"/>", "db": "<ellipse cx=\"12\" cy=\"6\" rx=\"8\" ry=\"3\"/><path d=\"M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3\"/>", "chart": "<path d=\"M4 20V10M10 20V4M16 20v-8M22 20H2\"/>", "team": "<circle cx=\"9\" cy=\"8\" r=\"3.5\"/><path d=\"M2 20c.8-3.5 3.5-5.5 7-5.5s6.2 2 7 5.5M17 5a3.5 3.5 0 0 1 0 7M18 14.8c2.2.7 3.5 2.4 4 5.2\"/>", "flame": "<path d=\"M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z\"/>", "box": "<path d=\"M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10\"/>", "truck": "<path d=\"M2 6h11v10H2zM13 9h4l4 4v3h-8\"/><circle cx=\"7\" cy=\"18\" r=\"1.8\"/><circle cx=\"17\" cy=\"18\" r=\"1.8\"/>", "refresh": "<path d=\"M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5\"/>", "shield": "<path d=\"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z\"/><path d=\"M9 12l2 2 4-4\"/>", "headset": "<path d=\"M4 14v-2a8 8 0 0 1 16 0v2\"/><rect x=\"3\" y=\"14\" width=\"4\" height=\"6\" rx=\"1\"/><rect x=\"17\" y=\"14\" width=\"4\" height=\"6\" rx=\"1\"/>", "search": "<circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-4-4\"/>"};
+  var ICONS = {"chat": "<path d=\"M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z\"/>", "home": "<path d=\"M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z\"/>", "menu": "<path d=\"M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3c-2 2-3 5-3 8h3v10\"/>", "grid": "<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/>", "tag": "<path d=\"M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z\"/><circle cx=\"8\" cy=\"8\" r=\"1.5\"/>", "cal": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M3 10h18M8 3v4M16 3v4\"/>", "clip": "<rect x=\"5\" y=\"4\" width=\"14\" height=\"17\" rx=\"2\"/><path d=\"M9 4h6v3H9zM9 12h6M9 16h6\"/>", "star": "<path d=\"M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z\"/>", "help": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01\"/>", "heart": "<path d=\"M12 20s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z\"/>", "cart": "<circle cx=\"9\" cy=\"20\" r=\"1.4\"/><circle cx=\"18\" cy=\"20\" r=\"1.4\"/><path d=\"M2 3h3l2.5 12h11l2-8H6\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c1-4 4-6 8-6s7 2 8 6\"/>", "db": "<ellipse cx=\"12\" cy=\"6\" rx=\"8\" ry=\"3\"/><path d=\"M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3\"/>", "chart": "<path d=\"M4 20V10M10 20V4M16 20v-8M22 20H2\"/>", "team": "<circle cx=\"9\" cy=\"8\" r=\"3.5\"/><path d=\"M2 20c.8-3.5 3.5-5.5 7-5.5s6.2 2 7 5.5M17 5a3.5 3.5 0 0 1 0 7M18 14.8c2.2.7 3.5 2.4 4 5.2\"/>", "flame": "<path d=\"M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z\"/>", "box": "<path d=\"M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10\"/>", "truck": "<path d=\"M2 6h11v10H2zM13 9h4l4 4v3h-8\"/><circle cx=\"7\" cy=\"18\" r=\"1.8\"/><circle cx=\"17\" cy=\"18\" r=\"1.8\"/>", "refresh": "<path d=\"M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5\"/>", "shield": "<path d=\"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z\"/><path d=\"M9 12l2 2 4-4\"/>", "headset": "<path d=\"M4 14v-2a8 8 0 0 1 16 0v2\"/><rect x=\"3\" y=\"14\" width=\"4\" height=\"6\" rx=\"1\"/><rect x=\"17\" y=\"14\" width=\"4\" height=\"6\" rx=\"1\"/>", "search": "<circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-4-4\"/>"};
   function ic(n) { return '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[n] + "</svg>"; }
-  var NAV = [["home", "Home", "home"], ["menu", "Menu", "menu"], ["categories", "Categories", "grid"], ["offers", "Offers", "tag"], ["reservations", "Reservations", "cal"], ["orders", "Orders", "clip"], ["reviews", "Reviews", "star"], ["support", "Support", "help"]];
+  var NAV = [["home", "Home", "home"], ["menu", "Menu", "menu"], ["categories", "Categories", "grid"], ["offers", "Offers", "tag"], ["reservations", "Reservations", "cal"], ["chat", "Chat with chef", "chat"], ["orders", "Orders", "clip"], ["reviews", "Reviews", "star"], ["support", "Support", "help"]];
   function renderChrome() {
     var cust = state.role === "customer", onHome = cust && state.view === "home", u = me(), cc = cartCount(), top = "";
     $("#homeView").hidden = !onHome; $("#siteFoot").hidden = !cust; $("#sidePromo").hidden = !cust; $("#gsearch").hidden = !cust;
@@ -226,10 +271,10 @@
     } else top += '<button class="btn sm primary" data-act="login" data-v="staff">Staff login</button><button class="btn sm solid-dark" data-act="login" data-v="chef">Kitchen login</button>';
     $("#topActions").innerHTML = top;
     var t, cur;
-    if (state.role === "chef") { t = [["kitchen", "Kitchen", "flame"]]; if (can("stock")) t.push(["stock", "Stock", "box"]); cur = state.chefView; }
+    if (state.role === "chef") { t = [["kitchen", "Kitchen", "flame"]]; if (can("stock")) t.push(["stock", "Stock", "box"]); if (chatAllowed()) t.push(["chat", "Guest chat", "chat"]); cur = state.chefView; }
     else if (cust) { t = NAV; cur = state.view; }
-    else { var pend = orders.filter(function (o) { return o.status === "Pending"; }).length; t = [["orders", "Order board" + (pend ? '<span class="badge">' + pend + "</span>" : ""), "clip"], ["items", "Menu items", "menu"], ["records", "Records", "db"], ["sales", "Sales", "chart"], ["team", "Team", "team"]]; cur = state.staffView; }
-    $("#tabs").innerHTML = t.map(function (x) { return '<button data-act="tab" data-v="' + x[0] + '"' + (cur === x[0] ? ' aria-current="page"' : "") + '><span class="i">' + ic(x[2]) + "</span>" + x[1] + "</button>"; }).join("");
+    else { var pend = orders.filter(function (o) { return o.status === "Pending"; }).length; t = [["orders", "Order board" + (pend ? '<span class="badge">' + pend + "</span>" : ""), "clip"], ["items", "Menu items", "menu"], ["records", "Records", "db"], ["sales", "Sales", "chart"], ["team", "Team", "team"], ["chat", "Guest chat", "chat"]]; cur = state.staffView; }
+    $("#tabs").innerHTML = t.map(function (x) { return '<button data-act="tab" data-v="' + x[0] + '"' + (cur === x[0] ? ' aria-current="page"' : "") + '><span class="i">' + ic(x[2]) + "</span>" + x[1] + chatBadge(x[0]) + "</button>"; }).join("");
   }
 
   /* ---------- customer: menu ---------- */
@@ -243,7 +288,7 @@
   function listGrid(list, msg) { return list.length ? '<div class="grid">' + list.map(itemCard).join("") + "</div>" : '<div class="empty">' + (msg || "No items match. Try another category or search.") + "</div>"; }
   function menuGrid() {
     var q = state.q.toLowerCase();
-    return listGrid(menu.filter(function (m) { return (state.cat === "All" || m.cat === state.cat) && (!state.cuisine || m.cuisine === state.cuisine) && (!q || (m.name + " " + (m.desc || "") + " " + m.cat + " " + (m.cuisine || "")).toLowerCase().indexOf(q) > -1); }));
+    return listGrid(menu.filter(function (m) { return (state.cat === "All" || m.cat === state.cat) && (!state.cuisine || m.cuisine === state.cuisine) && (!q || m.name.toLowerCase().indexOf(q) > -1); }));
   }
   function miniCart() {
     var keys = Object.keys(state.cart);
@@ -286,7 +331,6 @@
   }
   function viewConfirm() {
     var o = state.lastOrder;
-    if (!o) return '<div class="panel empty">No recent order to show.<br><br><button class="btn primary" data-act="tab" data-v="orders">View my orders</button></div>';
     return '<div class="panel stack" style="max-width:560px;margin:0 auto"><h2>Order placed</h2><p class="sub">Your confirmation number is <b class="mono">#' + o.id + "</b>. Payment of " + ugx(o.total) + " was received.</p>" + tracker(o) +
       '<div><b>' + (isDel(o) ? "Delivery to " + esc(o.addr) + ", " + esc(o.area) + "." : "Pickup:") + '</b> ' + (o.slot === "ASAP" ? "As soon as possible" : "Today at " + o.slot) + "</div><ul style=\"margin:0;padding-left:18px\">" + itemsText(o).map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + '</ul><div class="actions"><button class="btn primary" data-act="tab" data-v="orders">Track my order</button><button class="btn" data-act="tab" data-v="menu">Order more</button></div></div>';
   }
@@ -311,13 +355,13 @@
     var reg = state.authTab === "reg";
     return '<div class="page-head"><h2>' + (reg ? "Create an account" : "Sign in") + '</h2></div><form class="panel stack" style="max-width:480px" id="authForm"><div class="seg" style="justify-self:start"><button type="button" data-act="authtab" data-v="in" aria-pressed="' + !reg + '">Sign in</button><button type="button" data-act="authtab" data-v="reg" aria-pressed="' + reg + '">Register</button></div>' +
       (reg ? '<label class="f">Full name<input class="in" id="rName" required></label><div class="two"><label class="f">Phone<input class="in" id="rPhone" inputmode="tel" required></label><label class="f">Delivery area<input class="in" id="rAddr" placeholder="e.g. Nakawa"></label></div>' : "") +
-      '<label class="f">Email<input class="in" id="aEmail" type="email" required value="' + esc(state.aEmail || (reg ? "" : "diane01@gmail.com")) + '"></label><label class="f">Password<input class="in" id="aPass" type="password" required value="' + (reg ? "" : "demo1234") + '"></label>' +
-      (state.authErr ? '<p class="err">' + state.authErr + "</p>" : "") + '<button class="btn primary" type="submit">' + (reg ? "Register" : "Sign in") + "</button>" + (reg ? "" : '<p class="hint">Demo accounts: diane01@gmail.com or james02@gmail.com, password demo1234.</p>') + "</form>";
+      '<label class="f">Email<input class="in" id="aEmail" type="email" required value="' + (reg ? "" : "diane01@gmail.com") + '"></label><label class="f">Password<input class="in" id="aPass" type="password" required value="' + (reg ? "" : "demo1234") + '"></label>' +
+      (state.authErr ? '<p class="err">' + state.authErr + "</p>" : "") + '<button class="btn primary" type="submit">' + (reg ? "Register" : "Sign in") + "</button>" + (reg ? "" : '<p class="hint">Demo accounts: diane01@gmail.com or james02@gmail.com, any password.</p>') + "</form>";
   }
 
   /* ---------- staff ---------- */
   function ticket(o) {
-    var c = byId(customers, o.cid), p = payOf(o.id), acts = "";
+    var c = byId(customers, o.cid), p = payOf(o.id), i = flow.indexOf(o.status), acts = "";
     if (o.status === "Pending" || o.status === "Preparing" || o.status === "Ready" || o.status === "Out for delivery") acts += '<button class="btn primary sm" data-act="advance" data-id="' + o.id + '">' + nextLabel(o) + "</button>";
     if (o.status === "Pending") acts += '<button class="btn danger sm" data-act="staffcancel" data-id="' + o.id + '">Cancel</button>';
     if (p && p.status === "Refund pending") acts += '<button class="btn sm" data-act="refund" data-id="' + o.id + '">Process refund</button>';
@@ -381,30 +425,18 @@
   }
 
   /* ---------- render ---------- */
-  // Every customer view render() can draw; also used by hash routing to validate a #view in the URL.
-  var VIEW_MAP = { home: function () { return ""; }, menu: viewMenu, categories: viewCategories, offers: viewOffers, favs: viewFavs, reservations: viewReserve, reviews: viewReviews, support: viewSupport, cart: viewCart, orders: viewOrders, account: viewAccount, confirm: viewConfirm, login: viewLogin };
-  // Customer content views (login is a staff form, so it is deliberately not in this list).
-  var CUSTOMER_VIEWS = ["home", "menu", "categories", "offers", "favs", "reservations", "reviews", "support", "cart", "orders", "account", "confirm"];
-  var overlayFocus = null;
   function render() {
     var u = me(); if (state.role !== "customer" && (!u || !u.active || u.role !== state.role)) { state.role = "customer"; setSession(null); }
     renderChrome();
     var v;
-    if (state.role === "chef") v = (state.chefView === "stock" && can("stock") ? viewChefStock : viewChef)();
-    else if (state.role === "customer") v = (VIEW_MAP[state.view] || viewMenu)();
-    else v = ({ orders: viewStaffOrders, items: viewStaffItems, records: viewRecords, sales: viewSales, team: viewTeam }[state.staffView] || viewStaffOrders)();
-    var prevFocus = document.activeElement;
-    $("#app").innerHTML = v; $("#app").hidden = state.role === "customer" && state.view === "home";
+    if (state.role === "chef") v = (state.chefView === "chat" ? viewKChat : state.chefView === "stock" && can("stock") ? viewChefStock : viewChef)();
+    else if (state.role === "customer") v = ({ home: function () { return ""; }, menu: viewMenu, categories: viewCategories, offers: viewOffers, favs: viewFavs, reservations: viewReserve, reviews: viewReviews, support: viewSupport, cart: viewCart, orders: viewOrders, account: viewAccount, confirm: viewConfirm, login: viewLogin, chat: viewChat }[state.view] || viewMenu)();
+    else v = ({ orders: viewStaffOrders, items: viewStaffItems, records: viewRecords, sales: viewSales, team: viewTeam, chat: viewKChat }[state.staffView] || viewStaffOrders)();
+    $("#app").innerHTML = v; chatHtml = ""; chatTick(); if ($("#kList")) paintKitchen(); $("#app").hidden = state.role === "customer" && state.view === "home";
     $("#popular").innerHTML = popularHtml();
     [].forEach.call(document.querySelectorAll("[data-count]"), function (el) { var n = menu.filter(function (m) { return m.cuisine === el.dataset.count; }).length; el.textContent = n + (n === 1 ? " dish" : " dishes"); });
-    // Hash routing: keep the URL in step with the customer view. Setting the same hash is a no-op,
-    // so this never loops with the hashchange listener below.
-    if (state.role === "customer" && location.hash !== "#" + state.view) location.hash = state.view;
-    var L = $("#layer"), wasOpen = !!L.querySelector(".overlay");
-    L.innerHTML = state.processing ? '<div class="overlay" role="alertdialog" aria-modal="true" aria-label="Waiting for payment" tabindex="-1"><div class="modal" style="text-align:center"><div class="spin"></div><h3>Waiting for payment approval</h3><p class="hint">' + (state.method === "card" ? "Contacting your card issuer…" : "Approve the prompt on " + esc(state.phone) + " to pay " + ugx(grand()) + ".") + "</p></div></div>" : "";
-    var ov = L.querySelector(".overlay");
-    if (ov) { if (!wasOpen) overlayFocus = prevFocus; ov.focus(); }
-    else if (wasOpen && overlayFocus) { try { if (overlayFocus.isConnected) overlayFocus.focus(); } catch (e) {} overlayFocus = null; }
+    var L = $("#layer");
+    L.innerHTML = state.processing ? '<div class="overlay" role="alertdialog" aria-label="Waiting for payment"><div class="modal" style="text-align:center"><div class="spin"></div><h3>Waiting for payment approval</h3><p class="hint">' + (state.method === "card" ? "Contacting your card issuer…" : "Approve the prompt on " + esc(state.phone) + " to pay " + ugx(grand()) + ".") + "</p></div></div>" : "";
   }
   function refreshMenuParts() { var g = $("#menuGrid"); if (g) { g.innerHTML = menuGrid(); $("#miniCart").innerHTML = miniCart(); } $("#popular").innerHTML = popularHtml(); renderChrome(); }
 
@@ -413,7 +445,6 @@
     var m = byId(menu, id); if (!m || !m.avail) return;
     var n = (state.cart[id] || 0) + d;
     if (n <= 0) delete state.cart[id]; else state.cart[id] = n;
-    saveState();
     if (state.view === "cart" || state.view === "favs" || state.view === "offers") render(); else refreshMenuParts();
   }
   function placeOrder() {
@@ -424,38 +455,40 @@
     state.checkErr = ""; state.processing = true; render();
     setTimeout(function () {
       var items = Object.keys(state.cart).map(function (k) { return { id: +k, qty: state.cart[k] }; });
-      var o = { id: nextOrder++, cid: u.id, date: TODAY, slot: state.slot, items: items, status: "Pending", total: grand(), note: state.note, type: state.fulfil, area: state.fulfil === "delivery" ? state.dArea : "", addr: state.fulfil === "delivery" ? state.dAddr.trim() : "", fee: deliveryFee() };
+      var o = { id: nextOrder++, cid: u.id, date: TODAY, slot: state.slot, items: items, status: "Pending", total: grand(), note: state.note, type: state.fulfil, area: state.fulfil === "delivery" ? state.dArea : "", addr: state.fulfil === "delivery" ? state.dAddr.trim() : "", fee: deliveryFee(), disc: discount() };
       orders.push(o);
       payments.push({ id: nextPay++, oid: o.id, method: state.method === "card" ? "Credit card" : "Mobile money", amount: o.total, date: TODAY, status: "Paid" });
-      state.cart = {}; state.promoOn = false; state.promoMsg = ""; state.note = ""; state.slot = "ASAP"; state.lastOrder = o; state.processing = false; state.view = "confirm"; saveState(); render();
+      state.cart = {}; state.promoOn = false; state.promoMsg = ""; state.note = ""; state.slot = "ASAP"; state.lastOrder = o; state.processing = false; state.view = "confirm"; render();
     }, 1800);
   }
   function cancelOrder(id, byStaff) {
     var o = byId(orders, id); if (!o || o.status !== "Pending") return;
     o.status = "Cancelled"; var p = payOf(id); if (p && p.status === "Paid") p.status = "Refund pending";
-    saveState();
     toast(byStaff ? "Order cancelled. Refund is waiting to be processed." : "Order cancelled. Your refund request was sent to staff."); render();
   }
 
   document.addEventListener("click", function (e) {
     var b = e.target.closest("[data-act]"); if (!b) return;
     var a = b.dataset.act, v = b.dataset.v, id = +b.dataset.id;
-    if (a === "login") { state.loginRole = v; state.view = "login"; state.authErr = ""; state.lUser = ""; state.role = "customer"; render(); window.scrollTo(0, 0); }
+    if (a === "kopen") { chatActive = v; chatHtml = ""; var cb = $("#chatMsgs"); if (cb) delete cb.dataset.p; paintKitchen(); }
+    else if (a === "kdelchat") { if (chatActive && window.confirm("Delete this conversation?")) { var did = chatActive; chatActive = null; chatApi.remove("chats/" + did).then(chatTick); } }
+    else if (a === "chatleave") { chatGuest = null; chatSeen = 0; chatBadgeN = 0; try { localStorage.removeItem("cafe_chat_guest"); localStorage.removeItem("cafe_chat_seen"); } catch (e2) {} render(); }
+    else if (a === "login") { state.loginRole = v; state.view = "login"; state.authErr = ""; state.lUser = ""; state.role = "customer"; render(); window.scrollTo(0, 0); }
     else if (a === "logout") { setSession(null); state.role = "customer"; state.view = "home"; render(); }
-    else if (a === "fav") { var fi = state.favs.indexOf(id); if (fi > -1) state.favs.splice(fi, 1); else state.favs.push(id); saveState(); render(); }
+    else if (a === "fav") { var fi = state.favs.indexOf(id); if (fi > -1) state.favs.splice(fi, 1); else state.favs.push(id); render(); }
     else if (a === "cuisine") { state.cuisine = v; state.cat = "All"; state.q = ""; $("#gq").value = ""; state.view = "menu"; render(); window.scrollTo(0, 0); }
     else if (a === "clearcuisine") { state.cuisine = ""; render(); }
     else if (a === "gosearch") { state.view = "menu"; state.cuisine = ""; render(); window.scrollTo(0, 0); }
     else if (a === "slide") { slideIdx = (slideIdx + (+v) + SLIDES.length) % SLIDES.length; heroUpdate(); }
-    else if (a === "combo") { if (byId(menu, 118).avail) { setCart(118, 1); state.view = "cart"; render(); window.scrollTo(0, 0); } else toast("The family combo is sold out today."); }
+    else if (a === "combo") { if (byId(menu, 118).avail) { state.cart[118] = (state.cart[118] || 0) + 1; state.view = "cart"; render(); window.scrollTo(0, 0); } else toast("The family combo is sold out today."); }
     else if (a === "soon") toast("Coming soon.");
-    else if (a === "promo") { var code = ($("#promo").value || "").trim().toUpperCase(); state.promoCode = code; var pu = user(); if (code !== "TASTY30") state.promoMsg = "That code is not valid."; else if (!pu) state.promoMsg = "Sign in first, then apply the code."; else if (orders.some(function (o) { return o.cid === pu.id && o.status !== "Cancelled"; })) state.promoMsg = "TASTY30 is for first orders only."; else { state.promoOn = true; state.promoMsg = ""; } render(); }
+    else if (a === "promo") { var code = ($("#promo").value || "").trim().toUpperCase(), pu = user(); if (code !== "TASTY30") state.promoMsg = "That code is not valid."; else if (!pu) state.promoMsg = "Sign in first, then apply the code."; else if (orders.some(function (o) { return o.cid === pu.id && o.status !== "Cancelled"; })) state.promoMsg = "TASTY30 is for first orders only."; else { state.promoOn = true; state.promoMsg = ""; } render(); }
     else if (a === "promooff") { state.promoOn = false; render(); }
-    else if (a === "kactive") { var ku = byId(staffUsers, id); ku.active = !ku.active; saveUsers(); state.authErr = ""; toast(ku.name + (ku.active ? " can log in again." : " can no longer log in.")); render(); }
-    else if (a === "kreset") { var rp = window.prompt("New password for " + byId(staffUsers, id).name + " (6+ characters):"); state.authErr = ""; if (rp && rp.length >= 6) { var ru = byId(staffUsers, id); ru.hash = hpw(ru.username, rp); saveUsers(); toast("Password reset."); } else if (rp) toast("Password must be 6+ characters."); render(); }
+    else if (a === "kactive") { var ku = byId(staffUsers, id); ku.active = !ku.active; saveUsers(); toast(ku.name + (ku.active ? " can log in again." : " can no longer log in.")); render(); }
+    else if (a === "kreset") { var rp = window.prompt("New password for " + byId(staffUsers, id).name + " (6+ characters):"); if (rp && rp.length >= 6) { var ru = byId(staffUsers, id); ru.hash = hpw(ru.username, rp); saveUsers(); toast("Password reset."); } else if (rp) toast("Password must be 6+ characters."); }
     else if (a === "kdel") { var du = byId(staffUsers, id); if (window.confirm("Delete the account for " + du.name + "?")) { staffUsers = staffUsers.filter(function (x) { return x.id !== id; }); saveUsers(); render(); } }
-    else if (a === "rconfirm") { reservations.filter(function (r) { return r.id === id; })[0].status = "Confirmed"; saveState(); render(); }
-    else if (a === "role") { state.role = v; if (v === "customer" && CUSTOMER_VIEWS.indexOf(state.view) === -1) state.view = "menu"; render(); }
+    else if (a === "rconfirm") { reservations.filter(function (r) { return r.id === id; })[0].status = "Confirmed"; render(); }
+    else if (a === "role") { state.role = v; if (v === "customer" && state.view === "confirm") state.view = "menu"; render(); }
     else if (a === "tab") { if (v === "menu") { state.cuisine = ""; state.q = ""; $("#gq").value = ""; } if (state.role === "customer") state.view = v; else if (state.role === "chef") state.chefView = v; else state.staffView = v; state.checkErr = ""; render(); window.scrollTo(0, 0); }
     else if (a === "cat") { state.cat = v; state.cuisine = ""; if (b.dataset.go) state.view = b.dataset.go; render(); window.scrollTo(0, 0); }
     else if (a === "inc") setCart(id, 1);
@@ -463,17 +496,17 @@
     else if (a === "place") placeOrder();
     else if (a === "cancel") cancelOrder(id, false);
     else if (a === "staffcancel") cancelOrder(id, true);
-    else if (a === "advance") { if (!can("cook")) { toast("Your account cannot update orders."); return; } var o = byId(orders, id); o.status = fl(o)[fl(o).indexOf(o.status) + 1]; saveState(); render(); }
-    else if (a === "refund") { payOf(id).status = "Refunded"; saveState(); toast("Refund marked as sent."); render(); }
-    else if (a === "toggle") { if (!can("stock")) { toast("Your account cannot change stock."); return; } var m = byId(menu, id); m.avail = !m.avail; if (!m.avail) delete state.cart[id]; saveState(); render(); }
+    else if (a === "advance") { if (!can("cook")) { toast("Your account cannot update orders."); return; } var o = byId(orders, id); o.status = fl(o)[fl(o).indexOf(o.status) + 1]; render(); }
+    else if (a === "refund") { payOf(id).status = "Refunded"; toast("Refund marked as sent."); render(); }
+    else if (a === "toggle") { if (!can("stock")) { toast("Your account cannot change stock."); return; } var m = byId(menu, id); m.avail = !m.avail; if (!m.avail) delete state.cart[id]; render(); }
     else if (a === "signout") { state.user = null; render(); }
     else if (a === "authtab") { state.authTab = v; state.authErr = ""; render(); }
   });
   document.addEventListener("input", function (e) {
     var t = e.target;
     if (t.id === "gq") { state.q = t.value; state.cuisine = ""; if (state.view !== "menu") { state.view = "menu"; render(); } else { var gg = $("#menuGrid"); if (gg) gg.innerHTML = menuGrid(); } }
+    else if (t.id === "search") { state.q = t.value; var g = $("#menuGrid"); if (g) g.innerHTML = menuGrid(); }
     else if (t.id === "phone") state.phone = t.value;
-    else if (t.id === "promo") state.promoCode = t.value;
     else if (t.id === "dAddr") state.dAddr = t.value;
     else if (t.id === "note") state.note = t.value;
   });
@@ -483,13 +516,22 @@
     else if (t.name === "pm") { state.method = t.value; render(); }
     else if (t.name === "fm") { state.fulfil = t.value; render(); }
     else if (t.id === "dArea") { state.dArea = t.value; render(); }
-    else if (t.dataset && t.dataset.off) { var mo = byId(menu, +t.dataset.off); mo.off = Math.min(90, Math.max(0, parseInt(t.value, 10) || 0)); toast(mo.name + (mo.off ? " now " + mo.off + "% off." : " offer removed.")); render(); }
+    else if (t.dataset && t.dataset.off) { var mo = byId(menu, +t.dataset.off); mo.off = Math.min(90, Math.max(0, parseInt(t.value, 10) || 0)); toast(mo.name + (mo.off ? " now " + mo.off + "% off." : " offer removed.")); }
     else if (t.dataset && t.dataset.kr) { var kk = byId(staffUsers, +t.dataset.id); kk.rights = kk.rights || {}; kk.rights[t.dataset.kr] = t.checked; saveUsers(); toast("Rights updated for " + kk.name + "."); }
-    else if (t.dataset && t.dataset.price) { var m = byId(menu, +t.dataset.price), n = Math.max(0, parseInt(t.value, 10) || 0); m.price = n; toast(m.name + " is now " + ugx(n)); render(); }
+    else if (t.dataset && t.dataset.price) { var m = byId(menu, +t.dataset.price), n = Math.max(0, parseInt(t.value, 10) || 0); m.price = n; toast(m.name + " is now " + ugx(n)); }
   });
   document.addEventListener("submit", function (e) {
     e.preventDefault();
-    if (e.target.id === "loginForm") {
+    if (e.target.id === "chatJoin") {
+      var gname = $("#cgName").value.trim(), gtable = $("#cgTable").value.trim();
+      chatGuest = { id: "g" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: gname, table: gtable }; chatSeen = Date.now();
+      try { localStorage.setItem("cafe_chat_guest", JSON.stringify(chatGuest)); localStorage.setItem("cafe_chat_seen", chatSeen); } catch (e2) {}
+      chatApi.patch("chats/" + chatGuest.id + "/meta", { name: gname, table: gtable, updated: Date.now(), lastFrom: "", last: "" }); render();
+    } else if (e.target.id === "chatForm" || e.target.id === "kForm") {
+      var inp = e.target.querySelector("input"), text = inp.value.trim().slice(0, 500); if (!text) return; inp.value = ""; var now = Date.now();
+      if (e.target.id === "chatForm") chatApi.push("chats/" + chatGuest.id + "/messages", { from: "guest", name: chatGuest.name, text: text, t: now }).then(function () { return chatApi.patch("chats/" + chatGuest.id + "/meta", { name: chatGuest.name, table: chatGuest.table, updated: now, lastFrom: "guest", last: text }); }).then(chatTick);
+      else if (chatActive) { var cid = chatActive; chatApi.push("chats/" + cid + "/messages", { from: "kitchen", name: me().name, text: text, t: now }).then(function () { return chatApi.patch("chats/" + cid + "/meta", { updated: now, lastFrom: "kitchen", last: text }); }).then(chatTick); }
+    } else if (e.target.id === "loginForm") {
       var un = $("#lUser").value.trim().toLowerCase(), pw = $("#lPass").value; state.lUser = un;
       var lu = staffUsers.filter(function (x) { return x.username.toLowerCase() === un && x.role === state.loginRole; })[0];
       if (!lu || lu.hash !== hpw(lu.username, pw)) state.authErr = "Wrong username or password.";
@@ -499,33 +541,26 @@
     } else if (e.target.id === "addKitchen") {
       var nu = $("#kUser").value.trim().toLowerCase();
       if (staffUsers.some(function (x) { return x.username.toLowerCase() === nu; })) { state.authErr = "That username is taken."; render(); return; }
-      staffUsers.push({ id: nextUid++, role: "chef", name: $("#kName").value.trim(), username: nu, hash: hpw(nu, $("#kPass").value), active: true, rights: { cook: $("#kCook").checked, stock: $("#kStock").checked } });
+      staffUsers.push({ id: nextUid++, role: "chef", name: $("#kName").value.trim(), username: nu, hash: hpw(nu, $("#kPass").value), active: true, rights: { cook: $("#kCook").checked, stock: $("#kStock").checked, chat: $("#kChat").checked } });
       saveUsers(); state.authErr = ""; toast("Kitchen account created."); render();
     } else if (e.target.id === "pwForm") {
-      var su = me(); state.authErr = "";
-      if (!su) { toast("Your session ended. Please sign in again."); render(); return; }
-      su.hash = hpw(su.username, $("#myPass").value); saveUsers(); toast("Your password was updated."); render();
+      var su = me(); su.hash = hpw(su.username, $("#myPass").value); saveUsers(); toast("Your password was updated."); render();
     } else if (e.target.id === "resForm") {
       reservations.push({ id: nextRes++, name: $("#rsName").value.trim(), phone: $("#rsPhone").value.trim(), date: $("#rsDate").value, time: $("#rsTime").value, guests: $("#rsGuests").value, status: "Requested" });
-      saveState(); toast("Table request sent. Staff will confirm."); render();
+      toast("Table request sent. Staff will confirm."); render();
     } else if (e.target.id === "revForm") {
-      reviews.push({ name: user().name, stars: +$("#rvStars").value, text: $("#rvText").value.trim(), date: TODAY }); saveState(); toast("Thanks for your review."); render();
+      reviews.push({ name: user().name, stars: +$("#rvStars").value, text: $("#rvText").value.trim(), date: TODAY }); toast("Thanks for your review."); render();
     } else if (e.target.id === "newsForm") {
-      var ne = $("#newsEmail").value.trim().toLowerCase();
-      if (subscribers.some(function (x) { return String(x).toLowerCase() === ne; })) { toast("That email is already subscribed."); return; }
-      subscribers.push(ne); e.target.reset(); saveState(); toast("Thanks for subscribing."); render();
+      subscribers.push($("#newsEmail").value.trim()); e.target.reset(); toast("Thanks for subscribing.");
     } else if (e.target.id === "authForm") {
       var email = $("#aEmail").value.trim().toLowerCase();
-      state.aEmail = email;
       var found = customers.filter(function (c) { return c.email === email; })[0];
       if (state.authTab === "reg") {
         if (found) { state.authErr = "That email already has an account. Sign in instead."; render(); return; }
-        var c = { id: nextCust++, name: $("#rName").value.trim(), email: email, phone: $("#rPhone").value.trim(), address: $("#rAddr").value.trim() || "Not given", pw: hpw(email, $("#aPass").value) };
-        customers.push(c); state.user = c.id; state.phone = c.phone; state.authErr = ""; state.view = cartCount() ? "cart" : "menu"; saveState(); toast("Welcome, " + c.name + "."); render();
+        var c = { id: nextCust++, name: $("#rName").value.trim(), email: email, phone: $("#rPhone").value.trim(), address: $("#rAddr").value.trim() || "Not given" };
+        customers.push(c); state.user = c.id; state.phone = c.phone; state.authErr = ""; state.view = cartCount() ? "cart" : "menu"; toast("Welcome, " + c.name + "."); render();
       } else {
         if (!found) { state.authErr = "No account with that email. Register to create one."; render(); return; }
-        if (!found.pw) found.pw = hpw(found.email, $("#aPass").value); // migrate accounts saved before passwords existed
-        if (found.pw !== hpw(found.email, $("#aPass").value)) { state.authErr = "Incorrect password."; render(); return; }
         state.user = found.id; state.phone = found.phone; state.authErr = ""; state.view = cartCount() ? "cart" : "menu"; render();
       }
     } else if (e.target.id === "addItem") {
@@ -535,15 +570,6 @@
   });
 
   [].forEach.call(document.querySelectorAll("#homeView .media[data-ph], .side-promo .media[data-ph]"), function (m) { var i = m.querySelector("img"); if (i) i.src = m.dataset.ph; });
-  loadState();
-  // Hash routing: start on the view named by the URL when it is one we know; otherwise normalise the URL.
-  var hv = (location.hash || "").replace(/^#/, "");
-  if (VIEW_MAP[hv]) state.view = hv;
-  try { history.replaceState(null, "", "#" + state.view); } catch (e) {}
-  window.addEventListener("hashchange", function () {
-    var v = (location.hash || "").replace(/^#/, "");
-    if (state.role === "customer" && VIEW_MAP[v] && v !== state.view) { state.view = v; state.checkErr = ""; render(); }
-  });
   heroUpdate();
   render();
 })();

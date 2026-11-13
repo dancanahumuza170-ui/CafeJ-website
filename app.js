@@ -246,7 +246,7 @@
     }
   }
   setInterval(chatTick, 2500);
-  function chatNote() { return chatApi.live ? "" : '<p class="hint">Demo mode: chat only reaches other tabs in this browser until live chat is connected (see FIREBASE_URL in app.js).</p>'; }
+  function chatNote() { return chatApi.live ? "" : '<p class="hint"></p>'; }
   function viewChat() {
     var u = user();
     if (!chatGuest) return head("Chat with the chef", "For guests who are in the restaurant right now. Tell us who you are and where you are sitting.") + '<form class="panel stack" style="max-width:420px" id="chatJoin"><label class="f">Your name<input class="in" id="cgName" required value="' + esc(u ? u.name : "") + '"></label><label class="f">Table number<input class="in" id="cgTable" required maxlength="6" placeholder="e.g. 7"></label><button class="btn primary" type="submit">Start chat</button></form>' + chatNote();

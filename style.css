@@ -1,3 +1,4 @@
+
 /* Layout: sticky top bar with role switch, tab row, then a single content column that becomes a two-column (menu + cart) grid on wide screens. */
 :root {
   --bg: #fff6ea;
@@ -385,3 +386,6 @@ details.panel summary { cursor: pointer; }
 .item .media:has(img) { aspect-ratio: auto; border: 0; background: transparent; display: block; padding: 0; }
 .item .media:has(img)::before, .item .media:has(img)::after { display: none; }
 .item .media img { position: static; width: 100%; height: auto; display: block; object-fit: contain; border-radius: 10px; }
+
+.dbbanner { background: #fff3cd; color: #5c3d00; border-bottom: 2px solid #e0b84a; padding: 10px 16px; font-size: 13.5px; text-align: center; position: relative; z-index: 60; }
+.dbbanner a { color: #8a3b00; font-weight: 700; }

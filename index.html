@@ -14,6 +14,7 @@
   </script>
 </head>
 <body>
+<div id="dbBanner" class="dbbanner" role="status" hidden></div>
 <div class="shell">
 
   <!-- ============ TOP BAR ============ -->
@@ -126,13 +127,14 @@
       <div><h4>Support</h4><button class="flink" data-act="tab" data-v="support">Help Center</button><button class="flink" data-act="tab" data-v="orders">Track Order</button><button class="flink" data-act="tab" data-v="support">Refunds</button><button class="flink" data-act="tab" data-v="support">Delivery Info</button><button class="flink" data-act="tab" data-v="support">FAQs</button></div>
       <div><h4>Legal</h4><button class="flink" data-act="soon">Terms &amp; Conditions</button><button class="flink" data-act="soon">Privacy Policy</button><button class="flink" data-act="soon">Cookie Policy</button><button class="flink" data-act="soon">Refund Policy</button></div>
       <div><h4>Newsletter</h4><p class="hint">Subscribe to get latest updates and exclusive offers.</p>
-        <form id="newsForm" class="news"><input class="in" id="newsEmail" type="email" placeholder="Your Email" required aria-label="Your email"><button class="btn primary sm" type="submit">Subscribe</button></form></div>
+        <form novalidate id="newsForm" class="news"><input class="in" id="newsEmail" type="email" placeholder="Your Email" required aria-label="Your email"><button class="btn primary sm" type="submit">Subscribe</button></form></div>
       <div class="copy">© 2026 Cafe J. All rights reserved.</div>
     </footer>
   </div>
 </div>
 <div id="layer"></div>
 <div id="toast" class="toast" hidden></div>
+<script src="config.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
